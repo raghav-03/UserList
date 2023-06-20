@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -9,18 +9,22 @@ import {
   ModalCloseButton,
   Button,
   useDisclosure,
-  useToast,
 } from "@chakra-ui/react";
-import { ViewIcon } from "@chakra-ui/icons";
-import { IconButton } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
 import { UserState } from "../Context/Context";
-
-const EditUserModal = ({ user, children }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const { users, setusers, fetch, setfetch } = UserState();
-  const [newuser, setnewuser] = useState({});
+import { useToast } from "@chakra-ui/react";
+const UserModal = ({ user, children, text, newuser, setnewuser }) => {
   const toast = useToast();
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const handlechange = (e) => {
+    setnewuser({ ...newuser, [e.target.name]: e.target.value });
+  };
+  const { users, setusers } = UserState();
+
+  const handleopen = () => {
+    setnewuser(user);
+    onOpen();
+  };
   const submitHandler = (e) => {
     e.preventDefault();
     if (newuser.phone.length !== 10) {
@@ -33,22 +37,26 @@ const EditUserModal = ({ user, children }) => {
       });
       return;
     }
-    users[newuser.id - 1] = newuser;
-    setusers([...users]);
+    if (text === "Edit") {
+      users[newuser.id - 1] = newuser;
+      setusers([...users]);
+    } else {
+      newuser.id = users.length + 1;
+      setusers([...users, newuser]);
+      setnewuser({
+        name: "",
+        email: "",
+        phone: "",
+      });
+    }
+
     toast({
-      title: "User Added Successfully",
+      title: `User ${text}ed Successfully`,
       status: "success",
       duration: 5000,
       isClosable: true,
       position: "bottom",
     });
-  };
-  const handlechange = (e) => {
-    setnewuser({ ...newuser, [e.target.name]: e.target.value });
-  };
-  const handleopen = () => {
-    setnewuser(user);
-    onOpen();
   };
   return (
     <>
@@ -56,7 +64,7 @@ const EditUserModal = ({ user, children }) => {
         <span onClick={onOpen}>{children}</span>
       ) : (
         <Button colorScheme="blue" onClick={handleopen}>
-          Edit
+          {text}
         </Button>
       )}
       <Modal onClose={onClose} isOpen={isOpen} isCentered>
@@ -68,7 +76,7 @@ const EditUserModal = ({ user, children }) => {
             display="flex"
             justifyContent="center"
           >
-            Edit User
+            {`${text} user`}
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody display="flex" flexDir="column" alignItems="center">
@@ -96,8 +104,8 @@ const EditUserModal = ({ user, children }) => {
                 onChange={handlechange}
               />
               <ModalFooter>
-                <Button type="submit" colorScheme="blue">
-                  Update User
+                <Button onClick={onClose} type="submit" colorScheme="blue">
+                  {`${text} user`}
                 </Button>
               </ModalFooter>
             </form>
@@ -108,4 +116,4 @@ const EditUserModal = ({ user, children }) => {
   );
 };
 
-export default EditUserModal;
+export default UserModal;
