@@ -5,11 +5,12 @@ const Users = () => {
   const { users, setusers } = UserState();
   return (
     <div>
-      <div className="users">
-        {users.map((user) => (
+      {users.map((user) => (
+        <>
           <User user={user} key={user.id} />
-        ))}
-      </div>
+          <br />
+        </>
+      ))}
     </div>
   );
 };
